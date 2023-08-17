@@ -51,7 +51,7 @@ class DQNAgent:
         return q_vals.max(-1)[1]
 
 class Model(nn.Module):
-    def __init__(self, obs_shape, num_actions, lr=0.00001):
+    def __init__(self, obs_shape, num_actions, lr=0.0001):
         super(Model, self).__init__()
         assert len(obs_shape) == 2, "This network only works for flat observations"
         self.obs_shape = obs_shape
