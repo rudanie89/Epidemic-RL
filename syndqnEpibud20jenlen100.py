@@ -1,4 +1,4 @@
-from synenvEpibud20jenlen100 import *
+from envEpi import *
 import gym
 import time
 import random
