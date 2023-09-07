@@ -2,7 +2,6 @@ import numpy as np
 import math
 import networkx as nx
 # from MHP.code.MHP import MHP
-
 import gym
 from gym.spaces import Discrete, Box, MultiDiscrete
 import numpy as np
@@ -14,29 +13,18 @@ from collections import Counter
 from itertools import count
 epsilon = 0.001
 
-# G = nx.read_edgelist("E:\\rl\\dqn1\\datafb\\facebook_combined.txt", create_using = nx.Graph(), nodetype=int)
 G=nx.generators.random_graphs.binomial_graph(100,0.02,seed=246,directed=False)
-
-len(list(G.edges()))
-#G = nx.Graph()
-#G.add_edges_from([(1, 2), (2, 3)])
-
-nbrs = list(nx.all_neighbors(G, 1))
-nbrs
-
 edgeAll = list(G.edges())
 len(edgeAll)
-
 listnodesFB = list(G.nodes)
-
 ##############
 fbnode = list(G.nodes)
-
+### this might not need -> delete it 
 def areSame(A,B):
     C=np.abs(A-B)
     d=C<=epsilon
     count_d=len(C[d])
-    if count_d >= 9000: #let's relax this to make sure not picking a lot of do nothing; before was: 24230
+    if count_d >= 9000:
         return 0 #
     return 1
 
