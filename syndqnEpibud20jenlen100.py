@@ -1,4 +1,4 @@
-from syntheticnew.ablation.synenvEpibud20jenlen100 import *
+from synenvEpibud20jenlen100 import *
 import gym
 import time
 import random
@@ -17,10 +17,6 @@ import numpy as np
 
 
 from itertools import count
-# env = gym.make('CartPole-v1')
-#
-# observation = env.reset()
-
 import os
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
