@@ -64,10 +64,6 @@ for i in G.nodes:
 top30list=[]
 for k in dict(Counter(betCent).most_common(30)).keys():
     top30list.append(k)
-#top20list = [15, 1, 3, 30, 5, 71, 19, 68, 24, 2, 59, 38, 86, 84, 64, 8, 35, 90, 13, 83]
-##directed graph ##[65, 71, 90, 99, 89, 60, 23, 63, 3, 49, 17, 85, 58, 56, 19, 6, 1, 66, 24, 79]
-
-
 '''
 Creating Env
 '''
@@ -139,18 +135,6 @@ class socialEnv(gym.Env): #object):
         return self.current_state
 
     def step(self, action):
-
-        # if action == 0:
-        #     self.debunkers = 100
-        #
-        #     current_par_provM, snext, rnext, Inext, \
-        #     reward6, reward7, reward8, current_listP = self.simulation_propagationOvertime(self.current_state,[],25,'True')
-        #
-        #     sim_AB = areSame(self.current_state, current_par_provM)
-        #     self.budgetAll = self.budgetAll+0
-        #     notinDe = 'nothing'
-
-        # else:
         self.debunkers = self.mitigators[action] #self.mitigators[action-1]
 
         current_par_provM, snext, rnext, Inext, \
