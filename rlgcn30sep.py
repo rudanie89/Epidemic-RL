@@ -199,7 +199,7 @@ qpredict = dict()
 
 episode_rewards = []
 
-for i_episode in range(100):
+for i_episode in range(1000):
     rolling_reward = 0
     last_observation,listedge_index = env.reset()
     episode_loss = 0
@@ -209,8 +209,7 @@ for i_episode in range(100):
     #
     if (i_episode + 1) % tau == 0:
         tgt.load_state_dict(Policy.state_dict())
-    #         torch.save(tgt.state_dict(),
-    #                    f"E:/rl/dqn1/MHP/output/syntheticnew/edge002length/reducenet100/bud20jenlen100/dqnEpi/{i_episode + 1}.pth")
+        torch.save(tgt.state_dict(),f"E:/pheme/code/timegcn/chapter5extra/output100nodes/dqnEpi/{i_episode + 1}.pth")
     # if not test:
     useBud = None
     actionUsed = []
@@ -220,7 +219,10 @@ for i_episode in range(100):
     infected_train = []
     inext_train = []
     qpredict_i = []
+    #t = 0
 
+    #while not done:
+    actionUsed = []
     for t in count():
         state = last_observation
         # action = env.action_space.sample()
@@ -240,21 +242,42 @@ for i_episode in range(100):
             print("use action from model: ", action)
         #
         # print(round((torch.max(m(flatten(torch.Tensor(state)).to(device))).item()), 4))
-        # qpredict_i.append(round((torch.max(m(flatten(torch.Tensor(state)).to(device))).item()), 4))
+        s_state = create_torch_graph_data(state, listedge_index)
+        s_state.batch = torch.tensor([0] * s_state.num_nodes, dtype=torch.long)
+        qpredict_i.append(round((torch.max(Policy(s_state.x.to(device), s_state.edge_index.to(device), s_state.batch.to(device))).item()), 4))
 
-        if (useBud is not None and useBud <= 0):
-            action = 0
-            print("no budget", useBud)
+        dem = 0
+        actionUsed.append(action)
+        while ((action in actionUsed) and (t <= 20)):
+            if random.random() < eps:
+                action = env.action_space.sample()
+            else:
+                s = create_torch_graph_data(state, listedge_index)
+                s.batch = torch.tensor([0] * s.num_nodes, dtype=torch.long)
+                a_prob = Policy(s.x.to(device), s.edge_index.to(device), s.batch.to(device))
+                a_distrib = Categorical(torch.exp(a_prob))
+                action = a_distrib.sample()
+                action = action.cpu()
+                action = action[-1].item()
+
+            dem = dem + 1
+            if dem == 10:
+                action = env.action_space.sample()
+                print("actionused: ", action)
+        print("New action: ", action)
+
+        # if (useBud is not None and useBud <= 0):
+        #     action = 0
+        #     print("no budget", useBud)
 
         observation, RLreward, done, user_debunker, notin, budgetAll, infectednodeM, infectnext, snext, inext, _ = env.step(action)
-        useBud = budgetAll
         actionUsed.append(action)
         rolling_reward += RLreward
-       print("action and reward at episode " + str(i_episode) + " at step " + str(t) + " :",
-             [action, user_debunker, notin, RLreward * 100, snext, inext, done])
+        #t = t +1
+        print("action and reward at episode:" + str(i_episode) + " at step "  + str(t) + " :", [action, user_debunker, notin, RLreward * 100, snext, inext, done])
 
         reward = RLreward
-        if (done or (useBud <= 0)):
+        if (done or (budgetAll <= 0)):
             next_state = np.zeros((100, 6))  # cai nay can sua lai
             break
         else:
@@ -269,7 +292,7 @@ for i_episode in range(100):
         snext_train.append((t + 1, int(snext)))
         inext_train.append((t + 1, int(inext)))
 
-        if ((len(rb.buffer) > 32) and (i_episode >= 10)):  #
+        if ((len(rb.buffer) > 32) and (i_episode >= 50)):  #
             train_batch = BiGraphDataset(rb.buffer, listedge_index)
             train_loader = DataLoader(train_batch, batch_size=32, shuffle=True, num_workers=0)
             tqdm_train_loader = tqdm(train_loader)
@@ -285,16 +308,54 @@ for i_episode in range(100):
 
             if eps > eps_min:
                 eps = eps * eps_decay
+        points.append((i_episode, t + 1))
+        losspoints.append((i_episode, episode_loss / (t + 1)))
+    recoveredPoint[i_episode] = recoveredEpi
+    action_traindict[i_episode] = action_train
+    # recovered_traindict[i_episode] = recovered_train
+    infected_nodesD[i_episode] = infectednodeM
+    infected_traindict[i_episode] = infected_train
+    snext_traindict[i_episode] = snext_train
+    inext_traindict[i_episode] = inext_train
+    qpredict[i_episode] = qpredict_i
 
-#
-# train_batch = BiGraphDataset(rb.buffer, listedge_index)
-# train_loader = DataLoader(train_batch, batch_size=2, shuffle=True, num_workers=0)
-# tqdm_train_loader = tqdm(train_loader)
-# dem = 0
-# for Batch_data in tqdm_train_loader:
-#     Batch_data.to(device)
-#     dem=dem + 1
-#     if dem>=3:
-#         break
-#     print(Batch_data)
+saveResult = {'points': points, 'loss': losspoints}
+path = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\losspointsR1k.txt"
 
+with open(path, 'w+') as f:
+    json.dump(saveResult, f, indent=4)
+
+# ResultRecovered = {'recovednode': recoveredPoint}
+path1 = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\train_reward_R1k.txt"
+with open(path1, 'w+') as f1:
+    json.dump(recoveredPoint, f1, indent=4)
+# action_traindict
+path2 = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\train_action_dictR1k.txt"
+with open(path2, 'w+') as f2:
+    json.dump(action_traindict, f2, indent=4)
+
+path3 = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\infected_no.txt"
+with open(path3, 'w+') as f3:
+    json.dump(infected_traindict, f3, indent=4)
+
+path4 = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\infected_nodes.txt"
+with open(path4, 'w+') as f4:
+    json.dump(infected_nodesD, f4, indent=4)
+
+# path5 = "E:\\rl\\dqn1\\cleanCode\\output\\modelsFB1k_check2\\train_recovered_dictR1k.txt"
+# with open(path5, 'w+') as f5:
+#     json.dump(recovered_traindict, f5, indent=4)
+path_qpredictAll = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\qpredict.txt"
+with open(path_qpredictAll, 'w+') as f_qpredictAll:
+    json.dump(qpredict, f_qpredictAll, indent=4)
+
+path_snextALL = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\snext_traindict.txt"
+with open(path_snextALL, 'w+') as f_snext:
+    json.dump(snext_traindict, f_snext, indent=4)
+
+path_inextALL = "E:\\pheme\\code\\timegcn\\chapter5extra\\output100nodes\\train\\inext_traindict.txt"
+with open(path_inextALL, 'w+') as f_inext:
+    json.dump(inext_traindict, f_inext, indent=4)
+
+
+##### try to test on the same data reported
