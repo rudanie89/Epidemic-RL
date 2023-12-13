@@ -12,8 +12,9 @@ While detection of rumours in online social networks has been intensively studie
 # Requirements
 
 # To train the model
-run command:
-python DQN.py
+Run the following command:
+```bash
+$ python DQN.py
 
 # References
 
