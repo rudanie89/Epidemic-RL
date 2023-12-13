@@ -15,7 +15,7 @@ While detection of rumours in online social networks has been intensively studie
 Run the following command:
 ```bash
 $ python DQN.py
-
+```
 # References
 
 # Citation
