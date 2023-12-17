@@ -20,6 +20,7 @@ python DQN.py
 
 # Citation
 if you find this code and paper are useful, please cite our paper.
+
 @inproceedings{nie2022mitigation,
   title={Mitigation of Rumours in Social Networks via Epidemic Model-based Reinforcement Learning},
   author={Nie, H Ruda and Zhang, Xiuzhen and Li, Minyi and Dolgun, Anil},
