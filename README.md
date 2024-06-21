@@ -8,9 +8,6 @@ While detection of rumours in online social networks has been intensively studie
 # Dataset
 ## Synthetic dataset
 ## Real dataset
-
-# Requirements
-
 # To train the model
 Run the following command:
 ```bash
